@@ -1,0 +1,34 @@
+ <!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Forgot Password - Explore City</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="container">
+    <div class="card">
+      <h1>Forgot Password?</h1>
+      <p class="subtitle">Enter your email address to receive a reset link.</p>
+      <input type="email" id="forgotEmail" placeholder="Email Address" />
+      <button onclick="sendResetLink()">Send Reset Link</button>
+      <p style="margin-top: 15px;">Remember your password? <a href="index.html">Back to Login</a></p>
+    </div>
+  </div>
+
+  <script>
+    function sendResetLink() {
+      const email = document.getElementById('forgotEmail').value.trim();
+      if (!email) {
+        alert("Please enter your email address.");
+        return;
+      }
+
+      alert(`If an account with ${email} exists, a reset link has been sent.`);
+      window.location.href = "index.html";
+    }
+  </script>
+</body>
+</html>

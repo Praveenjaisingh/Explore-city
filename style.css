@@ -1,0 +1,163 @@
+
+* {
+    box-sizing: border-box;
+    font-family: 'Poppins', sans-serif;
+    margin: 0;
+    padding: 0;
+  }
+  
+  body {
+    background: linear-gradient(to right, #cbe9f5, #eaf7fc);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+  }
+  
+  
+  .container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+  }
+  
+  .hidden {
+    display: none;
+  }
+  
+  .card {
+    background-color: #ffffff;
+    padding: 30px 40px;
+    border-radius: 15px;
+    box-shadow: 0 8px 16px rgba(0, 123, 200, 0.2);
+    width: 100%;
+    max-width: 400px;
+    text-align: center;
+  }
+  
+  h1, h2, h3 {
+    color: #0077b6;
+    margin-bottom: 20px;
+  }
+  
+  .subtitle {
+    font-size: 0.95rem;
+    color: #555;
+    margin-bottom: 15px;
+  }
+  
+  
+  input[type="text"],
+  input[type="email"],
+  input[type="password"] {
+    width: 100%;
+    padding: 12px 14px;
+    margin: 10px 0;
+    border: 1px solid #a4d3ee;
+    border-radius: 8px;
+    outline: none;
+    background-color: #f4fbfe;
+    transition: border-color 0.3s ease;
+  }
+  
+  input:focus {
+    border-color: #0077b6;
+  }
+  
+  
+  button {
+    width: 100%;
+    padding: 12px;
+    margin-top: 15px;
+    background-color: #0077b6;
+    border: none;
+    border-radius: 8px;
+    color: white;
+    font-weight: 600;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+  }
+  
+  button:hover {
+    background-color: #005f91;
+  }
+  
+  
+  a {
+    color: #0077b6;
+    text-decoration: none;
+  }
+  
+  a:hover {
+    text-decoration: underline;
+  }
+  
+  
+  .place-list {
+    list-style: none;
+    padding-left: 0;
+    margin-top: 20px;
+  }
+  
+  .place-list li {
+    background-color: #e0f3fc;
+    margin: 10px 0;
+    padding: 10px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+  }
+  
+  .place-list li:hover {
+    background-color: #cce5f7;
+  }
+  
+  
+  .or-divider {
+    margin: 10px 0;
+    font-size: 0.9rem;
+    color: #888;
+  }
+  
+  
+.card1 {
+    background-color: #ffffff;
+    padding: 30px 40px;
+    border-radius: 15px;
+    box-shadow: 0 8px 16px rgba(0, 123, 200, 0.2);
+    width: 100%;
+    max-width: 400px;
+    text-align: center;
+  }
+  
+  .h21 {
+    color: #0077b6;
+    margin-bottom: 20px;
+  }
+  
+  .p1 {
+    font-size: 1.1rem;
+    margin-bottom: 20px;
+    color: #555;
+  }
+  
+  .button1 {
+    width: 100%;
+    padding: 12px;
+    margin-top: 15px;
+    background-color: #0077b6;
+    border: none;
+    border-radius: 8px;
+    color: white;
+    font-weight: 600;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+  }
+  
+  button1:hover {
+    background-color: #005f91;
+  }
+  
