@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Explore City</title>
+
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;500;700&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+
+  <style>
+    * {
+      box-sizing: border-box;
+      font-family: 'Poppins', sans-serif;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background: linear-gradient(to right, #cbe9f5, #eaf7fc);
+    }
+
+    .container {
+      width: 100%;
+      max-width: 600px;
+      margin: auto;
+      padding: 20px;
+    }
+
+    .card {
+      background: #fff;
+      padding: 20px;
+      border-radius: 15px;
+      box-shadow: 0 8px 16px rgba(0, 123, 200, 0.2);
+    }
+
+    h1 {
+      text-align: center;
+      color: #0077b6;
+      margin-bottom: 10px;
+    }
+
+    input {
+      width: 100%;
+      padding: 10px;
+      margin-top: 10px;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+    }
+
+    button {
+      width: 100%;
+      padding: 10px;
+      margin-top: 10px;
+      background: #0077b6;
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background: #005f91;
+    }
+
+    #placesList {
+      max-height: 200px;
+      overflow-y: auto;
+      margin-top: 10px;
+      list-style: none;
+    }
+
+    li {
+      background: #e0f3fc;
+      padding: 10px;
+      border-radius: 8px;
+      margin-top: 5px;
+      cursor: pointer;
+    }
+
+    li:hover {
+      background: #cce5f7;
+    }
+
+    #map {
+      height: 300px;
+      margin-top: 15px;
+      border-radius: 10px;
+    }
+
+    .top-bar {
+      width: 100%;
+      display: flex;
+      justify-content: flex-end;
+      padding: 15px 20px;
+    }
+
+    .top-bar button {
+      width: auto;
+      padding: 8px 16px;
+      background: #ff4d4f;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+
+    .top-bar button:hover {
+      background: #d9363e;
+    }
+
+    #toast {
+      position: fixed;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: #333;
+      color: #fff;
+      padding: 12px 20px;
+      border-radius: 8px;
+      opacity: 0;
+      pointer-events: none;
+      transition: all 0.3s ease;
+      z-index: 9999;
+      font-size: 14px;
+    }
+
+    #toast.show {
+      opacity: 1;
+      bottom: 40px;
+    }
+
+    #toast.success {
+      background: #28a745;
+    }
+
+    #toast.error {
+      background: #dc3545;
+    }
+
+    #toast.info {
+      background: #0077b6;
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="top-bar">
+    <button onclick="logout()">Logout</button>
+  </div>
+
+  <div class="container">
+    <div class="card">
+
+      <h1>Explore City</h1>
+
+      <button onclick="getLocation()">📍 Use My Location</button>
+
+      <input type="text" id="manualLocation" placeholder="Enter location" />
+      <button onclick="useManualLocation()">Set Location</button>
+
+      <input type="text" id="searchInput" placeholder="Select location first..." disabled oninput="debounceSearch()" />
+
+      <ul id="placesList"></ul>
+
+      <div id="map"></div>
+
+    </div>
+  </div>
+
+  <div id="toast"></div>
+
+  <script>
+    let userLat = null;
+    let userLng = null;
+    let map;
+    let markers = [];
+    let timeout;
+
+    function checkAuth() {
+      const token = localStorage.getItem("token");
+
+      if (!token) {
+        logout();
+        return;
+      }
+
+      const expiry = localStorage.getItem("token_expiry");
+      if (expiry && Date.now() > Number(expiry)) {
+        logout();
+      }
+    }
+
+    async function logout() {
+      const token = localStorage.getItem("token");
+
+      try {
+        const query = document.getElementById("searchInput")?.value || "";
+
+        await fetch("/api/users/logout", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${token}`
+          },
+          body: JSON.stringify({
+            loc: query,
+            lat: userLat,
+            lng: userLng
+          })
+        });
+
+      } catch (err) {
+        console.error("Logout API error:", err);
+      }
+
+      localStorage.removeItem("token");
+      localStorage.removeItem("token_expiry");
+
+      window.location.href = "logout.html";
+    }
+
+    function goLogin() {
+      window.location.href = "index.html";
+    }
+
+    function showToast(message, type = "info") {
+      const toast = document.getElementById("toast");
+
+      if (!toast) return;
+
+      toast.innerText = message;
+      toast.className = "";
+
+      toast.classList.add("show", type);
+
+      setTimeout(() => {
+        toast.classList.remove("show");
+      }, 2500);
+    }
+
+    window.onload = function () {
+      checkAuth();
+      initMap();
+    };
+
+    history.pushState(null, null, location.href);
+    window.onpopstate = function () {
+      history.go(1);
+    };
+
+    function initMap() {
+      map = L.map('map').setView([9.9252, 78.1198], 12);
+
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '© OpenStreetMap'
+      }).addTo(map);
+    }
+
+    function getLocation() {
+      navigator.geolocation.getCurrentPosition((pos) => {
+        userLat = pos.coords.latitude;
+        userLng = pos.coords.longitude;
+
+        map.setView([userLat, userLng], 13);
+        enableSearch();
+
+        showToast("Location detected", "success");
+      });
+    }
+
+    async function useManualLocation() {
+      const location = document.getElementById("manualLocation").value;
+
+      if (!location) return showToast("Enter location", "error");
+
+      const res = await fetch(
+        `https://nominatim.openstreetmap.org/search?q=${location}&format=json&limit=1`
+      );
+
+      const data = await res.json();
+
+      if (data.length > 0) {
+        userLat = parseFloat(data[0].lat);
+        userLng = parseFloat(data[0].lon);
+
+        map.setView([userLat, userLng], 13);
+        enableSearch();
+      } else {
+        showToast("Location not found", "error");
+      }
+    }
+
+    function enableSearch() {
+      const input = document.getElementById("searchInput");
+      input.disabled = false;
+      input.placeholder = "Search (hotel, hospital...)";
+      input.focus();
+    }
+
+    function debounceSearch() {
+      clearTimeout(timeout);
+      timeout = setTimeout(fetchPlaces, 400);
+    }
+
+    async function fetchPlaces() {
+      const query = document.getElementById("searchInput").value;
+
+      if (!query) {
+        document.getElementById("placesList").innerHTML = "";
+        return;
+      }
+
+      if (!userLat || !userLng) {
+        showToast("Please select location first", "error");
+        return;
+      }
+
+      const token = localStorage.getItem("token");
+
+      const res = await fetch("/api/users/searchLoc", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          loc: query,
+          lat: userLat,
+          lng: userLng
+        })
+      });
+
+      const result = await res.json();
+      renderPlaces(result.data);
+    }
+
+    function renderPlaces(places) {
+      const list = document.getElementById("placesList");
+      list.innerHTML = "";
+
+      markers.forEach(m => map.removeLayer(m));
+      markers = [];
+
+      if (!places || places.length === 0) {
+        list.innerHTML = "<li>No places found</li>";
+        return;
+      }
+
+      places.forEach(place => {
+        const li = document.createElement("li");
+        li.innerHTML = `<b>${place.name}</b><br>${place.address}`;
+
+        li.onclick = () => {
+          map.setView([place.lat, place.lng], 15);
+        };
+
+        list.appendChild(li);
+
+        const marker = L.marker([place.lat, place.lng])
+          .addTo(map)
+          .bindPopup(place.name);
+
+        markers.push(marker);
+      });
+
+      map.setView([places[0].lat, places[0].lng], 13);
+    }
+  </script>
+
+</body>
+
+</html>
