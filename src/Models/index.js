@@ -19,12 +19,12 @@ if (process.env.DATABASE_URL) {
         logging: false,
         dialectOptions: {
             ssl: {
-                require: true, // This enforces SSL
-                rejectUnauthorized: false, // This is okay for cloud setups where you may not have full certificate validation
+                require: true,
+                rejectUnauthorized: false,
             },
         },
     });
-}else {
+} else {
     sequelize = new Sequelize(
         config.database,
         config.username,
