@@ -102,7 +102,7 @@ class userService {
 
         await forgetMail({
             to: user.email,
-            subject: "Reset Your Password - Smart Agri-Connect",
+            subject: "Reset Your Password - Explore-City",
             replacements: {
                 name: user.name,
                 RESET_LINK: resetURL
